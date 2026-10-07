@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TSPES AI - 60s Crisis Simulation</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent-red: #ef4444;
+            --accent-green: #22c55e;
+            --accent-blue: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: var(--accent-blue);
+        }
+
+        .timer-badge {
+            background-color: var(--accent-red);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .log-area {
+            background-color: #090d16;
+            border-radius: 8px;
+            padding: 16px;
+            height: 260px;
+            overflow-y: auto;
+            font-family: "Courier New", Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            border: 1px solid #1e293b;
+            margin-bottom: 16px;
+        }
+
+        .log-entry {
+            margin-bottom: 10px;
+        }
+
+        .log-system { color: #f59e0b; }
+        .log-ai { color: var(--accent-blue); }
+        .log-user { color: var(--accent-green); }
+        .log-alert { color: var(--accent-red); font-weight: bold; }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: #334155;
+            color: var(--text-main);
+            border: 1px solid #475569;
+            padding: 12px 16px;
+            border-radius: 6px;
+            text-align: left;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .score-card {
+            display: none;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .score-card h3 { color: var(--accent-green); margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h2>TSPES AI Crisis Simulator</h2>
+        <div class="timer-badge" id="timer">Time Left: 60s</div>
+    </div>
+
+    <div class="log-area" id="logWindow">
+        <div class="log-entry log-system">[SYSTEM INITIALIZED]: Emergency Protocol Alpha Loaded.</div>
+        <div class="log-entry log-ai">[AI AGENT]: ⚠️ CRITICAL INCIDENT REPORT: An explosion has occurred at Chemical Tanker Bay B. Chemical fumes are spreading toward Residential Block 4. What is your immediate action command?</div>
+    </div>
+
+    <div class="options-container" id="optionsBox">
+        <button class="btn" onclick="makeChoice(1)">Option A: Issue immediate full evacuation order for Block 4.</button>
+        <button class="btn" onclick="makeChoice(2)">Option B: Dispatch Hazmat team to isolate Tanker Bay B first.</button>
+        <button class="btn" onclick="makeChoice(3)">Option C: Deploy drone to assess gas toxicity levels before moving.</button>
+    </div>
+
+    <div class="score-card" id="scoreCard">
+        <h3>Simulation Complete!</h3>
+        <p id="scoreText"></p>
+        <button class="btn" style="text-align:center; display:inline-block; margin-top:10px;" onclick="resetSim()">Restart Simulation</button>
+    </div>
+</div>
+
+<script>
+    let timeLeft = 60;
+    let timerInterval = null;
+    let currentStep = 1;
+    let score = { speed: 100, sop: 100, stress: 0 };
+
+    function startTimer() {
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').innerText = `Time Left: ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                endSim(false);
+            }
+        }, 1000);
+    }
+
+    startTimer();
+
+    function appendLog(text, className) {
+        const logWindow = document.getElementById('logWindow');
+        const entry = document.createElement('div');
+        entry.className = `log-entry ${className}`;
+        entry.innerText = text;
+        logWindow.appendChild(entry);
+        logWindow.scrollTop = logWindow.scrollHeight;
+    }
+
+    function makeChoice(choice) {
+        if (currentStep === 1) {
+            if (choice === 1) {
+                appendLog("> COMMAND: Evacuate Block 4 immediately.", "log-user");
+                appendLog("[AI AGENT]: Residents evacuating, but panicked crowd blocks main road. Meanwhile, hostile media reports false second explosion causing citywide panic!", "log-ai");
+                updateOptions(
+                    "Option A: Deploy police units for crowd control on main road.",
+                    "Option B: Issue public statement clarifying no second explosion exists.",
+                    "Option C: Divert evacuation through northern service road."
+                );
+            } else if (choice === 2) {
+                appendLog("> COMMAND: Dispatch Hazmat team to Tanker Bay B.", "log-user");
+                score.sop -= 20;
+                appendLog("[AI AGENT]: 🚨 HAZARD ESCALATION: Fumes reached Block 4 residents while Hazmat was en route! 15 casualties reported due to delay.", "log-alert");
+                updateOptions(
+                    "Option A: Issue urgent medical emergency response & immediate evacuation.",
+                    "Option B: Pull Hazmat back to set up medical triage line.",
+                    "Option C: Request regional reinforcements."
+                );
+            } else {
+                appendLog("> COMMAND: Deploy drone for toxicity assessment.", "log-user");
+                score.sop -= 30;
+                appendLog("[AI AGENT]: ⚠️ DRONE DATA DELAYED: High winds disrupt drone sensors. Wind shifts fumes directly towards Block 4 daycare center!", "log-alert");
+                updateOptions(
+                    "Option A: Immediately execute emergency lockdown on daycare.",
+                    "Option B: Order immediate priority evacuation for daycare center.",
+                    "Option C: Spray water curtain to suppress chemical fumes."
+                );
+            }
+            currentStep = 2;
+        } else if (currentStep === 2) {
+            appendLog("> COMMAND: Executing tactical response step 2.", "log-user");
+            appendLog("[AI AGENT]: AI adaptive engine evaluating resolution metrics...", "log-ai");
+            setTimeout(() => {
+                endSim(true);
+            }, 1200);
+        }
+    }
+
+    function updateOptions(optA, optB, optC) {
+        const btns = document.querySelectorAll('.options-container .btn');
+        btns[0].innerText = optA;
+        btns[1].innerText = optB;
+        btns[2].innerText = optC;
+    }
+
+    function endSim(success) {
+        clearInterval(timerInterval);
+        document.getElementById('optionsBox').style.display = 'none';
+        document.getElementById('scoreCard').style.display = 'block';
+
+        const finalScore = Math.max(0, score.sop - (60 - timeLeft));
+        let evalText = "";
+
+        if (!success) {
+            evalText = "❌ TIMEOUT: Command latency exceeded threshold. Crisis escalated uncontrolled.";
+        } else if (finalScore >= 70) {
+            evalText = `✅ SUCCESS: Excellent decision speed & SOP adherence! Overall Score: ${finalScore}/100.`;
+        } else {
+            evalText = `⚠️ WARNING: Crisis contained, but high casualty/panic risk due to delay. Overall Score: ${finalScore}/100.`;
+        }
+
+        document.getElementById('scoreText').innerText = evalText;
+    }
+
+    function resetSim() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
